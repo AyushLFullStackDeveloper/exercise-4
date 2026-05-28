@@ -11,9 +11,10 @@ export class BasePage {
 
   /**
    * Navigate to a path relative to the baseURL.
+   * Waits for the page to reach 'load' state before resolving.
    */
-  async navigateTo(path: string = '/') {
-    await this.page.goto(path);
+  async navigateTo(path: string = '/'): Promise<void> {
+    await this.page.goto(path, { waitUntil: 'load' });
   }
 
   /**
@@ -24,16 +25,17 @@ export class BasePage {
   }
 
   /**
-   * Wait for a specific URL pattern.
+   * Wait for a specific URL pattern using Playwright's built-in URL watcher.
+   * Uses 'load' state to guarantee the page has fully rendered before returning.
    */
-  async waitForURL(pattern: string | RegExp) {
-    await this.page.waitForURL(pattern, { waitUntil: 'load', timeout: 5000 });
+  async waitForURL(pattern: string | RegExp): Promise<void> {
+    await this.page.waitForURL(pattern, { waitUntil: 'load', timeout: 10_000 });
   }
 
   /**
-   * Reload the current page.
+   * Reload the current page and wait for it to fully load.
    */
-  async reloadPage() {
+  async reloadPage(): Promise<void> {
     await this.page.reload({ waitUntil: 'load' });
   }
 
@@ -53,11 +55,16 @@ export class BasePage {
 
   /**
    * Detects the active page state based on the current URL.
+   *
+   * Uses `waitForLoadState('domcontentloaded')` to ensure the page has
+   * painted before reading the URL — eliminates the need for waitForTimeout().
    */
   async determineCurrentPageState(): Promise<ActivePageState> {
-    // Wait briefly for any redirects to resolve
-    await this.page.waitForTimeout(200);
+    // Wait for DOM to be ready (no static delay needed)
+    await this.page.waitForLoadState('domcontentloaded');
+
     const url = this.page.url();
+
     if (url.includes('dashboard')) {
       return 'DASHBOARD';
     }

@@ -2,6 +2,7 @@ import { test, expect } from '../fixtures/test.fixture';
 import { USERS } from '../test-data/auth.data';
 import { AssertHelper } from '../helpers/assert.helper';
 import { NavigationHelper } from '../helpers/navigation.helper';
+import { Logger } from '../helpers/logger.util';
 
 test.describe('Self-Adapting Dashboard Layout & Session Management Tests', () => {
 
@@ -27,7 +28,7 @@ test.describe('Self-Adapting Dashboard Layout & Session Management Tests', () =>
     expect(widgetsLoaded).toBeTruthy();
     
     const cardData = await dashboardPage.getStatCards();
-    console.log(`[Dashboard] Detected ${cardData.length} statistics cards at runtime.`);
+    Logger.debug(`[Dashboard] Detected ${cardData.length} statistics cards at runtime.`);
     expect(cardData.length).toBeGreaterThan(0);
 
     // Perform Logout
